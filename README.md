@@ -61,7 +61,7 @@ sudo systemctl restart dovecot
 crie um usuário
 ```bash
 sudo adduser vitor
-# ou crie outro usuário desejado
+sudo adduser vitor sudo # para colocar no sudoers
 
 # Agora crie a estrutura Maildir:
 sudo su - vitor
