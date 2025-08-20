@@ -7,64 +7,33 @@ Para este trabalho, o domínio gsvm.com.br foi adquirido para servir como âncor
 
 ## Configurações iniciais
 
-A placa não pode estar em modo NAT. Coloque-a para `placa em modo bridge` com o nome "Intel(R) Ethernet Connection"
-
+1. A placa não pode estar em modo NAT. Coloque-a para `placa em modo bridge` que deve ter o nome similar a "Intel(R) Ethernet Connection" 
+2. Então, garanta que seu sistema está devidamente atualizado
 ```bash
-sudo apt update
-sudo apt install postfix dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd -y
+sudo apt update && sudo apt upgrade -y
 ```
-
-- Tipo de configuração: Internet Site
-- Nome do sistema de correio: gsvm.com.br
-
+3. Agora, defina um hostname (nome acessório ao seu IP) para seu sistema
 ```bash
-sudo nano /etc/postfix/main.cf
+sudo hostnamectl set-hostname mail.{seudominio}.local
+# Exemplo: mail.gsvm.local
 ```
-
-o que modificar:
-
+4. Descubra seu IP
+```bash
+ifconfig # caso não tenha, instale net-tools
+```
+5. Este IP que você descobriu será usado agora: vamos modificar o `/etc/hosts`
+```bash
+sudo nano /etc/hosts
+```
+6. Adicione uma linha, logo abaixo do host que você já possui, dizendo seu host novo baseado em seu IP
 ```ini
-myhostname = mail.gsvm.com.br
-myorigin = /etc/mailname
-mydestination = $myhostname, gsvm.com.br, localhost.localdomain, localhost
-home_mailbox = Maildir/
-smtpd_tls_cert_file=/etc/letsencrypt/live/mail.gsvm.com.br/fullchain.pem
-smtpd_tls_key_file=/etc/letsencrypt/live/mail.gsvm.com.br/privkey.pem
-smtpd_use_tls=yes
+192.0.0.1  localhost
+{seu ip}  mail.{seudominio}.local
+# Exemplo: 10.0.2.15  mail.gsvm.local
 ```
-
-salvar e reiniciar
+7. Instale o postfix, responsável por enviar os e-mails:
 ```bash
-sudo systemctl restart postfix
+sudo apt install postfix -y
 ```
-
-```bash
-sudo nano /etc/dovecot/conf.d/10-mail.conf
-```
-editar
-```ini
-mail_location = maildir:~/Maildir
-```
-
-```bash
-sudo nano /etc/dovecot/conf.d/10-auth.conf
-```
-edite
-```ini
-disable_plaintext_auth = no
-auth_mechanisms = plain login
-```
-salve e reinicie
-```
-sudo systemctl restart dovecot
-```
-crie um usuário
-```bash
-sudo adduser vitor
-sudo adduser vitor sudo # para colocar no sudoers
-
-# Agora crie a estrutura Maildir:
-sudo su - vitor
-mkdir -p Maildir/{cur,new,tmp}
-exit
-```
+Durante a configuração, escolha "Internet Site", e em nome do correio insira {seudominio}.local (como gsvm.local)
+8. Então, insira os dados do postfix para que ele saiba a direção e caminhos a seguir 
